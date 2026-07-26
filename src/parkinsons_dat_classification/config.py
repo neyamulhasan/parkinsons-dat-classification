@@ -30,12 +30,49 @@ class RuntimeConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class TrainingConfig:
+    """Training controls for the baseline and future model stacks."""
+
+    validation_fraction: float
+    batch_size: int
+    random_state: int
+
+
+@dataclass(frozen=True, slots=True)
+class BaselineConfig:
+    """Baseline model hyperparameters."""
+
+    max_iter: int
+    class_weight: str
+    histogram_bins: int
+
+
+@dataclass(frozen=True, slots=True)
+class ArtifactConfig:
+    """Repository-local artifact directories."""
+
+    checkpoint_dir: Path
+    report_dir: Path
+
+
+@dataclass(frozen=True, slots=True)
+class InferenceConfig:
+    """Offline inference settings."""
+
+    submission_filename: str
+
+
+@dataclass(frozen=True, slots=True)
 class AppConfig:
     """Top-level configuration object for the repository."""
 
     project_name: str
     paths: ProjectPaths
     runtime: RuntimeConfig
+    training: TrainingConfig
+    baseline: BaselineConfig
+    artifacts: ArtifactConfig
+    inference: InferenceConfig
 
 
 def load_config(config_path: Path) -> dict[str, Any]:
@@ -63,6 +100,10 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
     project_section = raw_config.get("project", {})
     paths_section = raw_config.get("paths", {})
     runtime_section = raw_config.get("runtime", {})
+    training_section = raw_config.get("training", {})
+    baseline_section = raw_config.get("baseline", {})
+    artifacts_section = raw_config.get("artifacts", {})
+    inference_section = raw_config.get("inference", {})
 
     if not isinstance(project_section, dict):
         raise ValueError("'project' section must be a mapping")
@@ -70,6 +111,14 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
         raise ValueError("'paths' section must be a mapping")
     if not isinstance(runtime_section, dict):
         raise ValueError("'runtime' section must be a mapping")
+    if not isinstance(training_section, dict):
+        raise ValueError("'training' section must be a mapping")
+    if not isinstance(baseline_section, dict):
+        raise ValueError("'baseline' section must be a mapping")
+    if not isinstance(artifacts_section, dict):
+        raise ValueError("'artifacts' section must be a mapping")
+    if not isinstance(inference_section, dict):
+        raise ValueError("'inference' section must be a mapping")
 
     project_name = str(project_section.get("name", "parkinsons-dat-classification"))
 
@@ -89,4 +138,35 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
         num_workers=int(runtime_section.get("num_workers", 4)),
     )
 
-    return AppConfig(project_name=project_name, paths=paths, runtime=runtime)
+    training = TrainingConfig(
+        validation_fraction=float(training_section.get("validation_fraction", 0.2)),
+        batch_size=int(training_section.get("batch_size", 8)),
+        random_state=int(training_section.get("random_state", 42)),
+    )
+
+    baseline = BaselineConfig(
+        max_iter=int(baseline_section.get("max_iter", 1000)),
+        class_weight=str(baseline_section.get("class_weight", "balanced")),
+        histogram_bins=int(baseline_section.get("histogram_bins", 16)),
+    )
+
+    artifacts = ArtifactConfig(
+        checkpoint_dir=_resolve_path(
+            project_root, artifacts_section.get("checkpoint_dir", "outputs/checkpoints")
+        ),
+        report_dir=_resolve_path(project_root, artifacts_section.get("report_dir", "outputs/reports")),
+    )
+
+    inference = InferenceConfig(
+        submission_filename=str(inference_section.get("submission_filename", "submission.csv")),
+    )
+
+    return AppConfig(
+        project_name=project_name,
+        paths=paths,
+        runtime=runtime,
+        training=training,
+        baseline=baseline,
+        artifacts=artifacts,
+        inference=inference,
+    )

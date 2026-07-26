@@ -26,3 +26,6 @@ baseline:
 artifacts:
   checkpoint_dir: outputs/checkpoints
   report_dir: outputs/reports
+
+inference:
+  submission_filename: submission.csv
