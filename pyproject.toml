@@ -12,6 +12,7 @@ dependencies = [
   "PyYAML>=6.0.2",
   "numpy>=1.26",
   "nibabel>=5.3",
+  "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]

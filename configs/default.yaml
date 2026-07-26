@@ -12,3 +12,13 @@ paths:
 runtime:
   seed: 42
   num_workers: 4
+
+training:
+  validation_fraction: 0.2
+  batch_size: 8
+  random_state: 42
+
+baseline:
+  max_iter: 1000
+  class_weight: balanced
+  histogram_bins: 16
