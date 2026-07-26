@@ -35,6 +35,19 @@ The project emphasizes:
 
 ---
 
+# Current Foundation
+
+The repository now includes an initial Python package scaffold, YAML configuration loading, and dataset inspection utilities.
+
+Key entry points:
+
+* `configs/default.yaml` for project paths and runtime defaults
+* `scripts/inspect_dataset.py` for local dataset-layout inspection
+* `src/parkinsons_dat_classification/config.py` for typed configuration loading
+* `src/parkinsons_dat_classification/data/discovery.py` for filesystem discovery
+
+---
+
 # Official Competition Runtime
 
 The submission package targets the official DrivenData execution environment.
@@ -141,31 +154,16 @@ parkinsons-dat-classification/
 
 ├── configs/                 Configuration files
 ├── data/                    Local dataset (excluded from Git)
-├── docker/                  Docker resources
-├── docs/                    Project documentation
-├── experiments/             Experiment outputs
-├── logs/                    Training logs
-├── notebooks/               Research notebooks
 ├── scripts/                 Utility scripts
 ├── src/
-│   ├── config/
-│   ├── datasets/
-│   ├── inference/
-│   ├── losses/
-│   ├── metrics/
-│   ├── models/
-│   ├── training/
-│   ├── transforms/
-│   ├── utils/
-│   ├── validation/
-│   └── visualization/
-├── submission/              Competition submission package
+│   └── parkinsons_dat_classification/
+│       ├── config.py
+│       ├── data/
+│       └── utils/
 ├── tests/                   Automated tests
-├── weights/                 Model checkpoints (excluded from Git)
-├── LICENSE
 ├── README.md
 ├── pyproject.toml
-└── requirements.txt
+└── .gitignore
 ```
 
 ---

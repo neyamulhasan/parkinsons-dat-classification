@@ -1,0 +1,14 @@
+project:
+  name: parkinsons-dat-classification
+
+paths:
+  data_root: data
+  raw_data: data/raw
+  processed_data: data/processed
+  smoke_test: data/smoke_test
+  outputs: outputs
+  logs: logs
+
+runtime:
+  seed: 42
+  num_workers: 4
