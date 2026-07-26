@@ -22,3 +22,7 @@ baseline:
   max_iter: 1000
   class_weight: balanced
   histogram_bins: 16
+
+artifacts:
+  checkpoint_dir: outputs/checkpoints
+  report_dir: outputs/reports
