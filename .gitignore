@@ -14,6 +14,10 @@ raw_data/
 processed_data/
 external_data/
 
+# Allow the Python source package named `data` under `src/`.
+!src/parkinsons_dat_classification/data/
+!src/parkinsons_dat_classification/data/**
+
 *.nii
 *.nii.gz
 *.dcm
