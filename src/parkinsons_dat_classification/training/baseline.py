@@ -11,6 +11,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 from parkinsons_dat_classification.data.dataset import DaTDataset, DaTSample, split_samples
+from parkinsons_dat_classification.evaluation.error_analysis import PredictionObservation
 from parkinsons_dat_classification.training.features import extract_volume_features, stack_feature_rows
 from parkinsons_dat_classification.training.metrics import (
     BinaryClassificationMetrics,
@@ -27,6 +28,7 @@ class BaselineTrainingResult:
     model: "BaselineBinaryClassifier"
     train_metrics: BinaryClassificationMetrics
     validation_metrics: BinaryClassificationMetrics
+    validation_predictions: tuple[PredictionObservation, ...]
     train_sample_count: int
     validation_sample_count: int
     feature_count: int
@@ -115,6 +117,21 @@ def train_baseline_classifier(
     train_scores = model.predict_proba(train_features)
     validation_scores = model.predict_proba(validation_features)
 
+    validation_records = tuple(
+        PredictionObservation(
+            uid=example.uid,
+            y_true=int(example.label),
+            y_pred=int(predicted_label),
+            y_score=float(score),
+        )
+        for example, predicted_label, score in zip(
+            validation_dataset.samples,
+            validation_predictions,
+            validation_scores,
+            strict=True,
+        )
+    )
+
     train_metrics = compute_binary_classification_metrics(
         train_labels,
         train_predictions,
@@ -136,6 +153,7 @@ def train_baseline_classifier(
         model=model,
         train_metrics=train_metrics,
         validation_metrics=validation_metrics,
+        validation_predictions=validation_records,
         train_sample_count=len(train_samples),
         validation_sample_count=len(validation_samples),
         feature_count=train_features.shape[1],
