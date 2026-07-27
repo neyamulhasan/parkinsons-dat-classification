@@ -111,9 +111,10 @@ def train_model(
     
     device = torch.device("cuda" if torch.cuda.is_available() and config.device != "cpu" else "cpu")
     model = model.to(device)
-    
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate, weight_decay=config.weight_decay)
     loss_fn = nn.BCEWithLogitsLoss()
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.epochs, eta_min=1e-6)
     
     best_roc_auc = -1.0
     best_metrics = None

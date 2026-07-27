@@ -2,6 +2,8 @@
 
 import logging
 from pathlib import Path
+from dataclasses import replace
+import torch
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -18,13 +20,17 @@ LOGGER = logging.getLogger(__name__)
 def main() -> int:
     """Run the PyTorch training pipeline on the full dataset."""
     configure_logging()
-    
-import torch
+
+    # Resolve project root and load configuration
+    project_root = Path(__file__).resolve().parents[1]
+    config = build_app_config(project_root / "configs" / "default.yaml", project_root=project_root)
+
     # Resolve device string; support 'auto' to select CUDA if available, else CPU
     device_str = config.torch_training.device
     if device_str == "auto":
         device_str = "cuda" if torch.cuda.is_available() else "cpu"
-    config.torch_training.device = device_str
+    # Create mutable copy of training config with resolved device
+    torch_cfg = replace(config.torch_training, device=device_str)
     
     # We load real training samples
     labels_csv = config.paths.raw_data / "train_labels.csv"
@@ -74,7 +80,7 @@ import torch
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,
-        config=config.torch_training,
+        config=torch_cfg,
         checkpoint_dir=checkpoint_dir,
         summary_writer=writer,
     )
@@ -88,7 +94,7 @@ import torch
         model_name="densenet121",
         checkpoint_dir=checkpoint_dir,
         scan_root=config.paths.smoke_test / "smoke_test_data_2gePzfM" / "niftis",
-        device=config.torch_training.device,
+        device=device_str,
         batch_size=1
     )
     
