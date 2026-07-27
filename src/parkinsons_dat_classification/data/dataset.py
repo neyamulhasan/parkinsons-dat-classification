@@ -220,3 +220,75 @@ def split_samples(
         raise ValueError("validation_fraction leaves no training samples")
 
     return train_samples, validation_samples
+
+
+# =============================================================================
+# PyTorch Integration
+# =============================================================================
+
+class TorchDaTDataset:
+    """PyTorch-compatible dataset for use with torch.utils.data.DataLoader."""
+
+    def __init__(self, samples: Iterable[DaTSample], transforms: Callable[[dict[str, Any]], dict[str, Any]] | None = None) -> None:
+        self.samples = list(samples)
+        self.transforms = transforms
+
+    def __len__(self) -> int:
+        return len(self.samples)
+
+    def __getitem__(self, index: int) -> dict[str, Any]:
+        import torch
+
+        sample = self.samples[index]
+        # Return a dictionary suitable for MONAI transforms
+        item = {
+            "image": str(sample.scan_path),
+            "label": torch.tensor(sample.label, dtype=torch.float32),
+            "uid": sample.uid,
+        }
+
+        if self.transforms is not None:
+            item = self.transforms(item)
+
+        return item
+
+
+def build_torch_dataloaders(
+    train_samples: list[DaTSample],
+    val_samples: list[DaTSample],
+    *,
+    train_transforms: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    val_transforms: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    batch_size: int = 8,
+    num_workers: int = 4,
+) -> tuple[Any, Any]:
+    """Build PyTorch DataLoaders for training and validation.
+    
+    Returns:
+        tuple[DataLoader, DataLoader]: (train_loader, val_loader)
+    """
+    from torch.utils.data import DataLoader
+
+    train_dataset = TorchDaTDataset(train_samples, transforms=train_transforms)
+    val_dataset = TorchDaTDataset(val_samples, transforms=val_transforms)
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True,
+        drop_last=True,
+    )
+
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+
+    return train_loader, val_loader
+

@@ -39,6 +39,17 @@ class TrainingConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class TorchTrainingConfig:
+    """PyTorch specific training hyperparameters."""
+
+    epochs: int
+    learning_rate: float
+    weight_decay: float
+    device: str
+    amp: bool
+
+
+@dataclass(frozen=True, slots=True)
 class BaselineConfig:
     """Baseline model hyperparameters."""
 
@@ -70,6 +81,7 @@ class AppConfig:
     paths: ProjectPaths
     runtime: RuntimeConfig
     training: TrainingConfig
+    torch_training: TorchTrainingConfig
     baseline: BaselineConfig
     artifacts: ArtifactConfig
     inference: InferenceConfig
@@ -101,6 +113,7 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
     paths_section = raw_config.get("paths", {})
     runtime_section = raw_config.get("runtime", {})
     training_section = raw_config.get("training", {})
+    torch_training_section = raw_config.get("torch_training", {})
     baseline_section = raw_config.get("baseline", {})
     artifacts_section = raw_config.get("artifacts", {})
     inference_section = raw_config.get("inference", {})
@@ -113,6 +126,8 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
         raise ValueError("'runtime' section must be a mapping")
     if not isinstance(training_section, dict):
         raise ValueError("'training' section must be a mapping")
+    if not isinstance(torch_training_section, dict):
+        raise ValueError("'torch_training' section must be a mapping")
     if not isinstance(baseline_section, dict):
         raise ValueError("'baseline' section must be a mapping")
     if not isinstance(artifacts_section, dict):
@@ -144,6 +159,14 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
         random_state=int(training_section.get("random_state", 42)),
     )
 
+    torch_training = TorchTrainingConfig(
+        epochs=int(torch_training_section.get("epochs", 10)),
+        learning_rate=float(torch_training_section.get("learning_rate", 1e-3)),
+        weight_decay=float(torch_training_section.get("weight_decay", 1e-4)),
+        device=str(torch_training_section.get("device", "auto")),
+        amp=bool(torch_training_section.get("amp", True)),
+    )
+
     baseline = BaselineConfig(
         max_iter=int(baseline_section.get("max_iter", 1000)),
         class_weight=str(baseline_section.get("class_weight", "balanced")),
@@ -166,6 +189,7 @@ def build_app_config(config_path: Path, project_root: Path | None = None) -> App
         paths=paths,
         runtime=runtime,
         training=training,
+        torch_training=torch_training,
         baseline=baseline,
         artifacts=artifacts,
         inference=inference,

@@ -118,3 +118,69 @@ def write_submission_csv(predictions: list[SubmissionPrediction], output_path: P
             writer.writerow({"uid": prediction.uid, "is_pathologic": prediction.is_pathologic})
 
     return output_path
+
+
+def build_torch_submission_predictions(
+    *,
+    model_name: str,
+    checkpoint_dir: Path,
+    scan_root: Path,
+    device: str = "cpu",
+    batch_size: int = 1,
+) -> list[SubmissionPrediction]:
+    """Build competition-format predictions from a saved PyTorch checkpoint."""
+
+    import torch
+    from parkinsons_dat_classification.models.simple_3d import build_3d_cnn
+    from parkinsons_dat_classification.training.torch_checkpointing import load_torch_checkpoint
+    from parkinsons_dat_classification.transforms.transforms import get_val_transforms
+    from parkinsons_dat_classification.data.dataset import TorchDaTDataset, DaTSample
+    from torch.utils.data import DataLoader
+
+    device_obj = torch.device(device)
+    model = build_3d_cnn(model_name=model_name).to(device_obj)
+    model, metadata = load_torch_checkpoint(model, checkpoint_dir / "best_model.pt", device=device_obj)
+    model.eval()
+
+    uids = load_smoke_test_uids(scan_root)
+    scan_paths = [scan_root / f"{uid}.nii.gz" for uid in uids]
+
+    # We construct mock DaTSample objects since the Dataset expects them, but label is ignored
+    mock_samples = [
+        DaTSample(uid=uid, scan_path=scan_path, label=0)
+        for uid, scan_path in zip(uids, scan_paths, strict=True)
+    ]
+
+    transforms = get_val_transforms()
+    dataset = TorchDaTDataset(mock_samples, transforms=transforms)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    predictions = []
+
+    with torch.no_grad():
+        for batch in dataloader:
+            images = batch["image"].to(device_obj)
+            batch_uids = batch["uid"]
+
+            with torch.amp.autocast("cuda", enabled=(device_obj.type != "cpu")):
+                logits = model(images)
+
+            probs = torch.sigmoid(logits)
+            
+            # squeeze() and tolist() will return a float if batch=1, or list of floats if batch>1
+            prob_list = probs.cpu().squeeze(-1).tolist()
+            if isinstance(prob_list, float):
+                prob_list = [prob_list]
+
+            for uid, prob in zip(batch_uids, prob_list, strict=True):
+                predictions.append(SubmissionPrediction(uid=uid, is_pathologic=float(prob)))
+
+    if len(predictions) != len(uids):
+        raise RuntimeError("Prediction count does not match smoke-test UID count")
+
+    LOGGER.info(
+        "Built %s submission predictions using PyTorch checkpoint (val ROC AUC: %s)",
+        len(predictions),
+        metadata.get("roc_auc", "N/A"),
+    )
+    return predictions
