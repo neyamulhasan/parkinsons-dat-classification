@@ -9,6 +9,7 @@ from typing import Any
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 from parkinsons_dat_classification.config import TorchTrainingConfig
 from parkinsons_dat_classification.training.metrics import compute_binary_classification_metrics, BinaryClassificationMetrics
@@ -104,6 +105,7 @@ def train_model(
     val_loader: DataLoader,
     config: TorchTrainingConfig,
     checkpoint_dir: Path,
+    summary_writer: SummaryWriter | None = None,
 ) -> dict[str, Any]:
     """Full PyTorch training pipeline."""
     
@@ -128,6 +130,13 @@ def train_model(
             f"Val F1: {metrics.f1:.4f}"
         )
         
+        if summary_writer is not None:
+            summary_writer.add_scalar("Loss/train", train_loss, epoch)
+            summary_writer.add_scalar("Loss/val", val_loss, epoch)
+            summary_writer.add_scalar("Metrics/val_roc_auc", metrics.roc_auc, epoch)
+            summary_writer.add_scalar("Metrics/val_f1", metrics.f1, epoch)
+            summary_writer.add_scalar("Metrics/val_accuracy", metrics.accuracy, epoch)
+
         if metrics.roc_auc > best_roc_auc:
             best_roc_auc = metrics.roc_auc
             best_metrics = metrics
