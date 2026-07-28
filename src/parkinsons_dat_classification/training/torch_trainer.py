@@ -130,6 +130,7 @@ def train_model(
             f"Val ROC AUC: {metrics.roc_auc:.4f} | "
             f"Val F1: {metrics.f1:.4f}"
         )
+        scheduler.step()
         
         if summary_writer is not None:
             summary_writer.add_scalar("Loss/train", train_loss, epoch)
