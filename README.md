@@ -1,14 +1,22 @@
-# Parkinson's DaT Classification
+Parkinson's DaT Classification
+==============================
 
-A production-grade deep learning framework for automated classification of Parkinsonian syndrome from Dopamine Transporter Single Photon Emission Computed Tomography (DaT SPECT) brain imaging.
+A production-grade deep learning framework for automated classification of
+Parkinsonian syndrome from Dopamine Transporter Single Photon Emission
+Computed Tomography (DaT SPECT) brain imaging.
 
-This repository is developed for the **DrivenData DaT Parkinson's Challenge** and serves as a reproducible, modular, and research-oriented machine learning project. The objective is to develop robust computer vision models for classifying DaT SPECT scans while following modern software engineering practices and the official competition requirements.
+This repository is developed for the DrivenData DaT Parkinson's Challenge and
+serves as a reproducible, modular, and research-oriented machine learning
+project. The objective is to develop robust computer vision models for
+classifying DaT SPECT scans while following modern software engineering
+practices and the official competition requirements.
 
----
 
-# Project Objective
+Project Objective
+-----------------
 
-The goal of this project is to design, implement, and evaluate an end-to-end deep learning pipeline capable of classifying DaT SPECT brain scans into:
+The goal of this project is to design, implement, and evaluate an end-to-end
+deep learning pipeline capable of classifying DaT SPECT brain scans into:
 
 * Normal
 * Abnormal (Parkinsonian Syndrome)
@@ -22,9 +30,9 @@ The project emphasizes:
 * Production-quality inference
 * Competition-compliant submission
 
----
 
-# Repository Goals
+Repository Goals
+----------------
 
 * Build a configurable medical imaging pipeline.
 * Support multiple deep learning architectures.
@@ -33,90 +41,127 @@ The project emphasizes:
 * Produce a submission package compatible with the official competition runtime.
 * Maintain high code quality through testing, documentation, and continuous improvement.
 
----
 
-# Current Foundation
+Current Foundation
+------------------
 
-The repository now includes an initial Python package scaffold, YAML configuration loading, and dataset inspection utilities.
+The repository currently includes an initial Python package scaffold, YAML
+configuration loading, and dataset inspection utilities.
 
 Key entry points:
 
-* `configs/default.yaml` for project paths and runtime defaults
-* `scripts/inspect_dataset.py` for local dataset-layout inspection
-* `src/parkinsons_dat_classification/config.py` for typed configuration loading
-* `src/parkinsons_dat_classification/data/discovery.py` for filesystem discovery
+* configs/default.yaml
+    Project paths and runtime defaults.
 
----
+* scripts/inspect_dataset.py
+    Local dataset-layout inspection.
 
-# Official Competition Runtime
+* src/parkinsons_dat_classification/config.py
+    Typed configuration loading.
+
+* src/parkinsons_dat_classification/data/discovery.py
+    Filesystem discovery.
+
+* scripts/train.py
+    Training entry point for PyTorch experiments.
+
+* scripts/generate_submission.py
+    Offline submission CSV generation (inference) using saved checkpoints.
+
+
+Official Competition Runtime
+----------------------------
 
 The submission package targets the official DrivenData execution environment.
 
-| Component             | Specification                                          |
-| --------------------- | ------------------------------------------------------ |
-| Programming Language  | Python 3.12                                            |
-| Execution             | Containerized                                          |
-| Entry Point           | `main.py`                                              |
-| GPU                   | NVIDIA A100 (80 GiB VRAM)                              |
-| CPU                   | 24 AMD EPYC vCPUs                                      |
-| Memory                | 220 GB RAM                                             |
-| CUDA                  | 12.9                                                   |
-| Internet Access       | Not Available                                          |
-| Maximum Runtime       | 3 Hours                                                |
-| Dependency Management | `uv`                                                   |
-| Submission Format     | ZIP archive containing inference code and model assets |
+Programming Language
+    Python 3.12
 
-The inference pipeline is designed to execute entirely offline within the official runtime environment.
+Execution
+    Containerized
 
----
+Entry Point
+    `scripts/train.py` (training) and `scripts/generate_submission.py` (offline inference)
 
-# Project Technology Stack
+GPU
+    NVIDIA A100 (80 GiB VRAM)
 
-The implementation in this repository uses the following technologies.
+CPU
+    24 AMD EPYC vCPUs
 
-## Programming
+Memory
+    220 GB RAM
+
+CUDA
+    12.9
+
+Internet Access
+    Not Available
+
+Maximum Runtime
+    3 Hours
+
+Dependency Management
+    Managed via `pyproject.toml` / setuptools. Install in a virtual env:
+
+    pip install -e .
+
+    Add optional packages as needed (e.g., OpenCV, Albumentations, pandas, matplotlib).
+
+Submission Format
+    ZIP archive containing inference code and model assets
+
+The inference pipeline is designed to execute entirely offline within the
+official runtime environment.
+
+
+Project Technology Stack
+------------------------
+
+Programming
 
 * Python 3.12
 
-## Deep Learning
+Deep Learning
 
 * PyTorch
 * TorchVision
 * Automatic Mixed Precision (AMP)
 
-## Medical Imaging
+Medical Imaging
 
 * MONAI
 * NiBabel
 
-## Computer Vision
+Computer Vision (optional)
 
-* OpenCV
-* Albumentations
+* OpenCV (optional)
+* Albumentations (optional)
 
-## Scientific Computing
+Scientific Computing
 
 * NumPy
 * pandas
 * SciPy
 * scikit-learn
 
-## Visualization
+Visualization
 
 * Matplotlib
 * TensorBoard
 
-## Configuration
+Configuration
 
 * YAML
-* OmegaConf
 
-## Experiment Management
+The project uses `PyYAML` for config loading (`src/parkinsons_dat_classification/config.py`).
+
+Experiment Management
 
 * TensorBoard
 * CSV Logging
 
-## Development Tools
+Development Tools
 
 * Git
 * GitHub
@@ -128,11 +173,12 @@ The implementation in this repository uses the following technologies.
 * mypy
 * pytest
 
----
 
-# Supported Model Architectures
+Supported Model Architectures
+-----------------------------
 
-The framework is designed to support multiple deep learning models through a modular model factory.
+The framework is designed to support multiple deep learning models through a
+modular model factory.
 
 Current and planned architectures include:
 
@@ -145,30 +191,30 @@ Current and planned architectures include:
 
 Additional architectures can be integrated with minimal code changes.
 
----
 
-# Repository Structure
+Repository Structure
+--------------------
 
-```text
-parkinsons-dat-classification/
+::
 
-├── configs/                 Configuration files
-├── data/                    Local dataset (excluded from Git)
-├── scripts/                 Utility scripts
-├── src/
-│   └── parkinsons_dat_classification/
-│       ├── config.py
-│       ├── data/
-│       └── utils/
-├── tests/                   Automated tests
-├── README.md
-├── pyproject.toml
-└── .gitignore
-```
+    parkinsons-dat-classification/
 
----
+    ├── configs/                 Configuration files
+    ├── data/                    Local dataset (excluded from Git)
+    ├── scripts/                 Utility scripts
+    ├── src/
+    │   └── parkinsons_dat_classification/
+    │       ├── config.py
+    │       ├── data/
+    │       └── utils/
+    ├── tests/                   Automated tests
+    ├── README.md
+    ├── pyproject.toml
+    └── .gitignore
 
-# Core Features
+
+Core Features
+-------------
 
 * Modular project architecture
 * Configuration-driven training
@@ -186,26 +232,28 @@ parkinsons-dat-classification/
 * Unit and integration testing
 * Professional documentation
 
----
 
-# Dataset
+Dataset
+-------
 
-The competition dataset is **not included** in this repository.
+The competition dataset is not included in this repository.
 
 To reproduce the experiments:
 
 1. Register for the DrivenData DaT Parkinson's Challenge.
 2. Accept the competition rules and data use agreement.
 3. Download the dataset from the official competition website.
-4. Store the dataset locally inside the `data/` directory.
+4. Store the dataset locally inside the data/ directory.
 
-The dataset is subject to the competition's licensing and data use restrictions and must not be redistributed.
+The dataset is subject to the competition's licensing and data use
+restrictions and must not be redistributed.
 
----
 
-# Competition Compliance
+Competition Compliance
+----------------------
 
-This repository is designed to comply with the official competition requirements.
+This repository is designed to comply with the official competition
+requirements.
 
 The repository includes:
 
@@ -224,18 +272,24 @@ The repository intentionally excludes:
 * Hidden evaluation data
 * Restricted competition resources
 
----
 
-# License
+License
+-------
 
-The source code in this repository is licensed under the MIT License.
+License
 
-The competition dataset is **not** covered by the MIT License and remains subject to the official competition terms and data use agreement.
+No LICENSE file is present in the repository. If you intend to publish under the MIT License, add a `LICENSE` file containing the MIT license text. Until a license file is added, the repository does not have an explicit license declaration.
 
----
+The competition dataset is not covered by the MIT License and remains subject
+to the official competition terms and data use agreement.
 
-# Disclaimer
 
-This repository is an independent software implementation intended for research, education, and participation in the DrivenData DaT Parkinson's Challenge.
+Disclaimer
+----------
 
-It is not a medical device and must not be used for clinical diagnosis or patient care decisions.
+This repository is an independent software implementation intended for
+research, education, and participation in the DrivenData DaT Parkinson's
+Challenge.
+
+It is not a medical device and must not be used for clinical diagnosis or
+patient care decisions.
